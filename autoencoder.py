@@ -61,6 +61,25 @@ def train(dataloader, model, optimizer, criterion, niter, use_cuda):
     return history
 
 
+def evaluate(dataloader, model, use_cuda, num_show=10):
+    for x, _ in dataloader:
+        break
+    x = x[:num_show]
+    if use_cuda:
+        x = x.cuda()
+    model.eval()
+    with torch.no_grad():
+        xhat = model(x.view(-1, 28*28)).cpu().data.numpy()
+    plt.figure(figsize=(int(num_show*1.5), int(num_show*0.3)))
+    for idx in range(num_show):
+        plt.subplot(2, num_show, 1+idx)
+        plt.imshow(x[idx].view(28, 28).cpu().data.numpy(), cmap='gray')
+        plt.subplot(2, num_show, 1+idx+num_show)
+        plt.imshow(xhat[idx].reshape(28, 28), cmap='gray')
+    plt.tight_layout()
+    plt.show()
+
+
 # class
 
 
@@ -119,3 +138,11 @@ if __name__ == "__main__":
     # train model
     history = train(dataloader=train_loader, model=model, optimizer=optimizer,
                     criterion=criterion, niter=niter, use_cuda=use_cuda)
+
+    # evaluate model
+    print('Training data')
+    evaluate(dataloader=train_loader, model=model,
+             use_cuda=use_cuda, num_show=num_show)
+    print('\nTest data')
+    evaluate(dataloader=test_loader, model=model,
+             use_cuda=use_cuda, num_show=num_show)
